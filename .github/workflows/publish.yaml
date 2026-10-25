@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - Dockerfile
+      - constraints-llava.txt
       - start.sh
       - web_gui.py
       - cad_converter.py
@@ -28,4 +29,5 @@ jobs:
           context: .
           push: true
           platforms: linux/amd64
+          provenance: false
           tags: ghcr.io/${{ github.repository }}:latest
