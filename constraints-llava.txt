@@ -1,0 +1,18 @@
+# Compatibility limits for CAD-Coder's legacy LLaVA dependencies.
+numpy<2
+huggingface_hub==0.25.2
+Pillow<11
+peft==0.10.0
+datasets<3
+torch==2.1.2
+torchvision==0.16.2
+transformers==4.37.2
+tokenizers==0.15.1
+accelerate==0.21.0
+gradio==4.16.0
+gradio_client==0.8.1
+httpx==0.24.0
+
+# Prevent wavedrom's legacy setup.py from fetching setuptools-scm 10.x
+setuptools-scm==8.1.0
+setuptools<81

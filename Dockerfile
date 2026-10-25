@@ -23,12 +23,21 @@ ARG CAD_CODER_REF=main
 RUN git clone https://github.com/anniedoris/cad-coder.git /opt/cad-coder \
     && cd /opt/cad-coder && git checkout "$CAD_CODER_REF"
 WORKDIR /opt/cad-coder
-# Explicit PyTorch / CUDA compatibility. Package's pyproject pins supporting libraries.
-RUN /opt/conda/envs/llava/bin/python -m pip install --upgrade 'pip<25' \
-    && /opt/conda/envs/llava/bin/pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu121 \
-    && /opt/conda/envs/llava/bin/pip install -e . \
-    && /opt/conda/envs/llava/bin/pip install 'peft==0.10.0' 'numpy<2' 'huggingface_hub==0.25.2' 'Pillow<11' 'datasets<3' tensorboard \
-    && /opt/conda/envs/llava/bin/python -m pip check
+# Install compatibility pins before CAD-Coder so pip resolves one coherent set.
+# Separate build steps make GitHub Actions show which operation failed.
+COPY constraints-llava.txt /opt/app/constraints-llava.txt
+ENV PIP_CONSTRAINT=/opt/app/constraints-llava.txt
+RUN /opt/conda/envs/llava/bin/python -m pip install --upgrade 'pip<25' 'setuptools<81' wheel \
+    && /opt/conda/envs/llava/bin/python -m pip install 'setuptools-scm==8.1.0' \
+    && /opt/conda/envs/llava/bin/python -c "import setuptools_scm; print('Legacy setuptools-scm build tooling OK')"
+RUN /opt/conda/envs/llava/bin/python -m pip install \
+    torch==2.1.2 torchvision==0.16.2 \
+    --index-url https://download.pytorch.org/whl/cu121
+RUN /opt/conda/envs/llava/bin/python -m pip install \
+    'numpy<2' 'huggingface_hub==0.25.2' 'Pillow<11' \
+    'peft==0.10.0' 'datasets<3' tensorboard
+RUN /opt/conda/envs/llava/bin/python -m pip install -e .
+RUN /opt/conda/envs/llava/bin/python -m pip check
 # CadQuery kept outside inference env, per upstream recommendation.
 RUN conda install -n cad -c conda-forge cadquery -y \
     && /opt/conda/envs/cad/bin/pip install trimesh plyfile pandas tqdm \

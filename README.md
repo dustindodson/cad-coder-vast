@@ -69,3 +69,12 @@ ls -lah /workspace/outputs
 If **STEP conversion failed**, inspect the generated Python in the Gradio interface. Code produced by CAD-Coder can contain unsupported imports, incomplete geometry, invalid topology, or use a result variable that the converter cannot find. The converter looks for top-level CadQuery Workplane/Shape objects, preferring `result`, `model`, `part`, `solid`, `shape`, or `obj`, and also supports other top-level names. It may need adaptation to specific output styles.
 
 **Note:** The 3D browser preview is derived from an STL mesh, but the downloaded STEP comes from the CadQuery solid (not a conversion of the STL).
+
+## GitHub Actions build diagnostics
+
+Dependency installation is split into separate Docker layers. If a build fails, expand the failing `RUN` step and locate the FIRST `ERROR:` or `ResolutionImpossible` line in the raw log, rather than the final `buildx failed` summary. This revision is a compatibility fix, not a guaranteed GPU-tested build.
+
+
+## Legacy wavedrom metadata build fix (October 2026)
+
+The Dockerfile now pins `setuptools-scm==8.1.0` and `setuptools<81` before installing CAD-Coder, with matching pip constraints. This avoids a failing `wavedrom` legacy `setup.py egg_info` path where the newer setuptools-scm 10.3.4 attempts to import `vcs_versioning` from an incompletely prepared build environment. The image has not been built and tested on a GPU here.
