@@ -1,3 +1,15 @@
+## Blackwell GPU build variant
+
+This package updates CUDA to 12.8.1, PyTorch 2.7.0+cu128, torchvision 0.22.0+cu128 and bitsandbytes 0.46.0. Because upstream CAD-Coder pins torch 2.1.2, the Dockerfile patches its `pyproject.toml` before `pip install -e .`. Other CadQuery, Gradio, and tunnel functionality is retained from the prior release.
+
+**Not GPU tested.** CAD-Coder legacy LLaVA/Transformers may need additional runtime compatibility changes. Rebuild image on GitHub, then re-create the Vast instance to pull updated `latest`.
+
+### GPU verification
+```bash
+/opt/conda/envs/llava/bin/python -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.get_arch_list()); print(torch.cuda.get_device_name(0))"
+tail -n 60 /workspace/cad-coder.log
+```
+
 # CAD-Coder on Vast.ai — Gradio + CAD export
 
 This image pins CUDA 12.1.1, Python 3.10, PyTorch 2.1.2, torchvision 0.16.2, Transformers version from the upstream CAD-Coder package, and provides:
@@ -15,7 +27,7 @@ Generated CadQuery code is **executed** automatically to create the STEP and STL
 
 ## Publish image using GitHub
 
-1. Create a GitHub repository (`cad-coder-vast`). Upload all files from this folder, including `.github/workflows/publish.yml`.
+1. Create a GitHub repository (`cad-coder-vast`). Upload all files from this folder, including `.github/workflows/publish.yaml`.
 2. GitHub **Actions** > **Build and publish CAD-Coder image** > Run workflow (or push changes to `main`).
 3. Make your GitHub Container Registry (GHCR) package public.
 4. Set Vast.ai custom Docker image to `ghcr.io/YOUR_USERNAME/cad-coder-vast:latest`.

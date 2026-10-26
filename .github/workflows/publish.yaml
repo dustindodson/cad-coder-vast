@@ -9,7 +9,7 @@ on:
       - start.sh
       - web_gui.py
       - cad_converter.py
-      - .github/workflows/publish.yml
+      - .github/workflows/publish.yaml
 permissions:
   contents: read
   packages: write

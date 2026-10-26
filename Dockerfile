@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
+FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
@@ -21,7 +21,15 @@ RUN conda config --set always_yes yes && conda create -n llava python=3.10 pip &
 
 ARG CAD_CODER_REF=main
 RUN git clone https://github.com/anniedoris/cad-coder.git /opt/cad-coder \
-    && cd /opt/cad-coder && git checkout "$CAD_CODER_REF"
+    && cd /opt/cad-coder && git checkout "$CAD_CODER_REF" \
+    && python3 - <<'PYEDIT'
+from pathlib import Path
+p = Path("/opt/cad-coder/pyproject.toml")
+s = p.read_text()
+assert "torch==2.1.2" in s and "torchvision==0.16.2" in s, "Upstream pins changed; review manually"
+s = s.replace("torch==2.1.2", "torch==2.7.0").replace("torchvision==0.16.2", "torchvision==0.22.0")
+p.write_text(s)
+PYEDIT
 WORKDIR /opt/cad-coder
 # Install compatibility pins before CAD-Coder so pip resolves one coherent set.
 # Separate build steps make GitHub Actions show which operation failed.
@@ -31,13 +39,14 @@ RUN /opt/conda/envs/llava/bin/python -m pip install --upgrade 'pip<25' 'setuptoo
     && /opt/conda/envs/llava/bin/python -m pip install 'setuptools-scm==8.1.0' \
     && /opt/conda/envs/llava/bin/python -c "import setuptools_scm; print('Legacy setuptools-scm build tooling OK')"
 RUN /opt/conda/envs/llava/bin/python -m pip install \
-    torch==2.1.2 torchvision==0.16.2 \
-    --index-url https://download.pytorch.org/whl/cu121
+    torch==2.7.0 torchvision==0.22.0 \
+    --index-url https://download.pytorch.org/whl/cu128
 RUN /opt/conda/envs/llava/bin/python -m pip install \
     'numpy<2' 'huggingface_hub==0.25.2' 'Pillow<11' \
-    'peft==0.10.0' 'datasets<3' tensorboard
+    'peft==0.10.0' 'datasets<3' 'bitsandbytes==0.46.0' tensorboard
 RUN /opt/conda/envs/llava/bin/python -m pip install -e .
-RUN /opt/conda/envs/llava/bin/python -m pip check
+RUN /opt/conda/envs/llava/bin/python -m pip check \
+    && /opt/conda/envs/llava/bin/python -c "import torch,bitsandbytes; print(torch.__version__,torch.version.cuda,bitsandbytes.__version__)"
 # CadQuery kept outside inference env, per upstream recommendation.
 RUN conda install -n cad -c conda-forge cadquery -y \
     && /opt/conda/envs/cad/bin/pip install trimesh plyfile pandas tqdm \

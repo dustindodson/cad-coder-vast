@@ -4,8 +4,8 @@ huggingface_hub==0.25.2
 Pillow<11
 peft==0.10.0
 datasets<3
-torch==2.1.2
-torchvision==0.16.2
+torch==2.7.0
+torchvision==0.22.0
 transformers==4.37.2
 tokenizers==0.15.1
 accelerate==0.21.0
@@ -16,3 +16,5 @@ httpx==0.24.0
 # Prevent wavedrom's legacy setup.py from fetching setuptools-scm 10.x
 setuptools-scm==8.1.0
 setuptools<81
+
+bitsandbytes==0.46.0
