@@ -1,0 +1,6 @@
+# Install torch with a CUDA wheel compatible with your Blackwell host first.
+transformers>=4.57.0,<6
+accelerate>=1.0
+pillow>=10
+safetensors>=0.5
+qwen-vl-utils>=0.0.14
